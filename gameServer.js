@@ -56,7 +56,6 @@ var Snake = function(snakeName,x,y,direction) {
   	var ret = false;
 	this.nodes.forEach(function(element) {
 		if (element.x == node.x && element.y == node.y) {
-
 			console.log('crash');	
 			ret = true;
 		}
@@ -158,10 +157,12 @@ function gameRoop() {
 	for (var i = 0 ; i < snakes.length ; i ++) {
 		for (var n = 0 ; n < snakes.length ; n ++) {
 			if (i != n) {
-				if (snakes[n].isCrashOnSnake(snakes[i].head())) {
-						snakes[i].isEliminate = true;
-						socketIO[i].emit('eliminate', {});
-						console.log(snakes[i].snakeID+" has eliminate");
+				if (snakes[i].nodes.length > 0) {
+					if (snakes[n].isCrashOnSnake(snakes[i].head())) {
+							snakes[i].isEliminate = true;
+							socketIO[i].emit('eliminate', {"1234":"123"});
+							console.log(snakes[i].snakeID+" has eliminate");
+					}
 				}
 			}
 
@@ -174,7 +175,7 @@ function gameRoop() {
 			if (!snakes[i].isEliminate) {
 			if (snakes[i].overbounds) {
 				snakes[i].isEliminate = true;
-				socketIO[i].emit('eliminate', {});
+				socketIO[i].emit('eliminate', {"1234":"123"});
 				console.log(snakes[i].snakeID+" has eliminate");
 			}	
 		};
@@ -208,6 +209,8 @@ io.on('connection', function(client) {
 	  //id 0 is host , onlu host can start game...
 	  if (userCount == 0) {
 	     client.emit('host', "hosting");
+	  } else {
+	  	 client.emit('player', "player");
 	  }
 
 	  //room is full
@@ -249,10 +252,12 @@ io.on('connection', function(client) {
 	  //disconnect
 	  client.on('disconnect', function(){
 		 userCount = userCount - 1;
+		 snakes.pop()
 		 console.log('disconnt');
 	  });
 
 	  client.on('start', function(){
+	  	 io.emit('start', { count: 'go' });
          gameStart = true;
          fruits = [];
          for (var i = 0 ; i < snakes.length ; i ++) {
